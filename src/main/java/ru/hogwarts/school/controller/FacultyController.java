@@ -1,56 +1,51 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.FacultyService;
-import java.util.Collection;
-import java.util.Collections;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/faculty")
 public class FacultyController {
 
-    private final FacultyService facultyService;
-    public FacultyController(FacultyService facultyService) {
-        this.facultyService = facultyService;
-    }
+    private final FacultyService service;
 
-    @GetMapping("{id}")
-    public ResponseEntity<Faculty> getFacultyInfo(@PathVariable Long id) {
-        Faculty faculty = facultyService.findFaculty(id);
-        if (faculty == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(faculty);
+    public FacultyController(FacultyService service) {
+        this.service = service;
     }
 
     @PostMapping
-    public Faculty createFaculty(@RequestBody Faculty faculty) {
-        return facultyService.addFaculty(faculty);
+    public ResponseEntity<Faculty> create(@RequestBody Faculty faculty) {
+        return ResponseEntity.ok(service.create(faculty));
     }
 
-    @PutMapping
-    public ResponseEntity<Faculty> editFaculty(@RequestBody Faculty faculty) {
-        Faculty updated = facultyService.editFaculty(faculty);
-        if (updated == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteFaculty(@PathVariable Long id) {
-        facultyService.deleteFaculty(id);
-        return ResponseEntity.ok().build();
+    @GetMapping("/{id}")
+    public ResponseEntity<Faculty> get(@PathVariable Long id) {
+        Faculty faculty = service.get(id);
+        return faculty != null ? ResponseEntity.ok(faculty) : ResponseEntity.notFound().build();
     }
 
     @GetMapping
-    public ResponseEntity<Collection<Faculty>> findFaculties(@RequestParam(required = false) String color) {
-        if (color != null && !color.isBlank()) {
-            return ResponseEntity.ok(facultyService.findByColor(color));
-        }
-        return ResponseEntity.ok(Collections.emptyList());
+    public List<Faculty> getAll() {
+        return service.getAll();
+    }
+
+    @PutMapping
+    public ResponseEntity<Faculty> update(@RequestBody Faculty faculty) {
+        return ResponseEntity.ok(service.update(faculty));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/color/{color}")
+    public List<Faculty> findByColor(@PathVariable String color) {
+        return service.findByColor(color);
     }
 }
