@@ -39,3 +39,4 @@ public class FacultyService {
         return repository.findByColorIgnoreCase(color);
     }
 }
+
