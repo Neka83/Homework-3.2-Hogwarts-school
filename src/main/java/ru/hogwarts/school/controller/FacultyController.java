@@ -1,52 +1,34 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/faculty")
+@RequestMapping("/faculties")
 public class FacultyController {
 
-    private final FacultyService service;
+    private final FacultyService facultyService;
 
-    public FacultyController(FacultyService service) {
-        this.service = service;
+    public FacultyController(FacultyService facultyService) {
+        this.facultyService = facultyService;
     }
 
-    @PostMapping
-    public ResponseEntity<Faculty> create(@RequestBody Faculty faculty) {
-        return ResponseEntity.ok(service.create(faculty));
+    @GetMapping("/filter")
+    public List<Faculty> findByNameOrColor(@RequestParam String param) {
+        return facultyService.findByNameOrColor(param);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Faculty> get(@PathVariable Long id) {
-        Faculty faculty = service.get(id);
-        return faculty != null ? ResponseEntity.ok(faculty) : ResponseEntity.notFound().build();
+    @GetMapping("/{id}/students")
+    public List<Student> getStudentsOfFaculty(@PathVariable Long id) {
+        return facultyService.getStudentsOfFaculty(id);
     }
 
     @GetMapping
-    public List<Faculty> getAll() {
-        return service.getAll();
-    }
-
-    @PutMapping
-    public ResponseEntity<Faculty> update(@RequestBody Faculty faculty) {
-        return ResponseEntity.ok(service.update(faculty));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/color/{color}")
-    public List<Faculty> findByColor(@PathVariable String color) {
-        return service.findByColor(color);
+    public List<Faculty> getAllFaculties() {
+        return facultyService.getAllFaculties();
     }
 }
-

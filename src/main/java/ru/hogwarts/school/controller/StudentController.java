@@ -1,52 +1,35 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/student")
+@RequestMapping("/students")
 public class StudentController {
 
-    private final StudentService service;
+    private final StudentService studentService;
 
-    public StudentController(StudentService service) {
-        this.service = service;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
-    @PostMapping
-    public ResponseEntity<Student> create(@RequestBody Student student) {
-        return ResponseEntity.ok(service.create(student));
+    @GetMapping("/age-between")
+    public List<Student> getStudentsByAgeBetween(@RequestParam int min, @RequestParam int max) {
+        return studentService.findByAgeBetween(min, max);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Student> get(@PathVariable Long id) {
-        Student student = service.get(id);
-        return student != null ? ResponseEntity.ok(student) : ResponseEntity.notFound().build();
+    @GetMapping("/{id}/faculty")
+    public Faculty getFacultyOfStudent(@PathVariable Long id) {
+        return studentService.getFacultyOfStudent(id);
     }
 
     @GetMapping
-    public List<Student> getAll() {
-        return service.getAll();
-    }
-
-    @PutMapping
-    public ResponseEntity<Student> update(@RequestBody Student student) {
-        return ResponseEntity.ok(service.update(student));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/age/{age}")
-    public List<Student> findByAge(@PathVariable int age) {
-        return service.findByAge(age);
+    public List<Student> getAllStudents() {
+        return studentService.getAllStudents();
     }
 }
-
