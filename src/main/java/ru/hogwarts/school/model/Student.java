@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 
 @Entity
 public class Student {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,8 +17,8 @@ public class Student {
     @JsonBackReference
     private Faculty faculty;
 
-    public Student() {
-    }
+
+    public Student() {}
 
     public Long getId() {
         return id;
