@@ -13,9 +13,7 @@ public class FacultyController {
 
     private final FacultyService facultyService;
 
-    public FacultyController(FacultyService facultyService) {
-        this.facultyService = facultyService;
-    }
+    public FacultyController(FacultyService facultyService) { this.facultyService = facultyService; }
 
     @GetMapping("/filter")
     public List<Faculty> findByNameOrColor(@RequestParam String param) {

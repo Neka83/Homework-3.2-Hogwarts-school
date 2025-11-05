@@ -9,7 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.service.AvatarService;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -19,11 +21,8 @@ public class AvatarController {
 
     private final AvatarService avatarService;
 
-    public AvatarController(AvatarService avatarService) {
-        this.avatarService = avatarService;
-    }
+    public AvatarController(AvatarService avatarService) { this.avatarService = avatarService; }
 
-    // POST: загрузка аватара
     @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
         if (file.getSize() > 1024 * 300) {
@@ -33,7 +32,6 @@ public class AvatarController {
         return ResponseEntity.ok("Avatar uploaded successfully");
     }
 
-    // GET: получить аватар из БД
     @GetMapping("/{id}/from-db")
     public ResponseEntity<byte[]> getAvatarFromDB(@PathVariable Long id) {
         Avatar avatar = avatarService.getAvatarFromDB(id);
@@ -45,7 +43,6 @@ public class AvatarController {
         return ResponseEntity.ok().headers(headers).body(avatar.getData());
     }
 
-    // GET: получить аватар с диска
     @GetMapping("/{id}/from-file")
     public void getAvatarFromFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
         Avatar avatar = avatarService.getAvatarFromDB(id);
@@ -59,5 +56,18 @@ public class AvatarController {
              OutputStream os = response.getOutputStream()) {
             is.transferTo(os);
         }
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> downloadAvatar(@PathVariable Long id) throws IOException {
+        Avatar avatar = avatarService.getAvatarFromDB(id);
+        Path path = Path.of(avatar.getFilePath());
+        byte[] data = Files.readAllBytes(path);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=avatar_" + id + ".jpg")
+                .contentType(MediaType.parseMediaType(avatar.getMediaType()))
+                .contentLength(avatar.getFileSize())
+                .body(data);
     }
 }

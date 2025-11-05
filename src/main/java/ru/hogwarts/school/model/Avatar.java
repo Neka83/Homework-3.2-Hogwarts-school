@@ -20,6 +20,8 @@ public class Avatar {
     @Lob
     private byte[] data;
 
+    public Avatar() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

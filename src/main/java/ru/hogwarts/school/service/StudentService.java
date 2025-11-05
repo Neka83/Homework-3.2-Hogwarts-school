@@ -3,6 +3,7 @@ package ru.hogwarts.school.service;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.exceptions.StudentNotFoundException;
 import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.AvatarRepository;
@@ -29,14 +30,13 @@ public class StudentService {
         this.avatarRepository = avatarRepository;
     }
 
-
-
     public Student createStudent(Student student) {
         return studentRepository.save(student);
     }
 
     public Student findStudent(Long id) {
-        return studentRepository.findById(id).orElseThrow();
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException("Student with id=" + id + " not found"));
     }
 
     public List<Student> getAllStudents() {
@@ -54,8 +54,6 @@ public class StudentService {
     public List<Student> findByAgeBetween(int min, int max) {
         return studentRepository.findByAgeBetween(min, max);
     }
-
-
 
     @Transactional
     public Avatar uploadAvatarAndReturn(Long studentId, MultipartFile file) throws IOException {
@@ -84,7 +82,7 @@ public class StudentService {
     @Transactional
     public Avatar findAvatar(Long studentId) {
         return avatarRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Avatar not found for student id: " + studentId));
+                .orElseThrow(() -> new StudentNotFoundException("Avatar for student id=" + studentId + " not found"));
     }
 
     private String getExtension(String filename) {
