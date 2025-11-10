@@ -1,7 +1,9 @@
 package ru.hogwarts.school.service;
 
 import org.springframework.stereotype.Service;
+import ru.hogwarts.school.exceptions.FacultyNotFoundException;
 import ru.hogwarts.school.model.Faculty;
+import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 
 import java.util.List;
@@ -9,33 +11,28 @@ import java.util.List;
 @Service
 public class FacultyService {
 
-    private final FacultyRepository repository;
+    private final FacultyRepository facultyRepository;
 
-    public FacultyService(FacultyRepository repository) {
-        this.repository = repository;
+    public FacultyService(FacultyRepository facultyRepository) {
+        this.facultyRepository = facultyRepository;
     }
 
-    public Faculty create(Faculty faculty) {
-        return repository.save(faculty);
+    public List<Faculty> findByNameOrColor(String param) {
+        return facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(param, param);
     }
 
-    public Faculty get(Long id) {
-        return repository.findById(id).orElse(null);
+    public List<Student> getStudentsOfFaculty(Long facultyId) {
+        return facultyRepository.findById(facultyId)
+                .map(Faculty::getStudents)
+                .orElse(List.of());
     }
 
-    public List<Faculty> getAll() {
-        return repository.findAll();
+    public List<Faculty> getAllFaculties() {
+        return facultyRepository.findAll();
     }
 
-    public Faculty update(Faculty faculty) {
-        return repository.save(faculty);
-    }
-
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
-
-    public List<Faculty> findByColor(String color) {
-        return repository.findByColorIgnoreCase(color);
+    public Faculty findFaculty(Long id) {
+        return facultyRepository.findById(id)
+                .orElseThrow(() -> new FacultyNotFoundException("Faculty with id=" + id + " not found"));
     }
 }
