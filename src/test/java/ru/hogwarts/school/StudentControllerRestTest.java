@@ -76,15 +76,32 @@ public class StudentControllerRestTest {
 
     @Test
     void shouldGetAllStudents() {
-        Student s1 = new Student(); s1.setId(1L); s1.setName("A"); s1.setAge(11);
-        Student s2 = new Student(); s2.setId(2L); s2.setName("B"); s2.setAge(12);
+        Student s1 = new Student();
+        s1.setId(1L);
+        s1.setName("A");
+        s1.setAge(11);
+
+        Student s2 = new Student();
+        s2.setId(2L);
+        s2.setName("B");
+        s2.setAge(12);
 
         when(studentService.getAllStudents()).thenReturn(List.of(s1, s2));
 
         ResponseEntity<Student[]> response = restTemplate.getForEntity(url(BASE), Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).hasSize(2);
+
+
+        assertThat(response.getBody()[0].getId()).isEqualTo(1L);
+        assertThat(response.getBody()[0].getName()).isEqualTo("A");
+        assertThat(response.getBody()[0].getAge()).isEqualTo(11);
+
+        assertThat(response.getBody()[1].getId()).isEqualTo(2L);
+        assertThat(response.getBody()[1].getName()).isEqualTo("B");
+        assertThat(response.getBody()[1].getAge()).isEqualTo(12);
     }
 
     @Test
@@ -118,14 +135,19 @@ public class StudentControllerRestTest {
 
     @Test
     void shouldFindByAgeBetween() {
-        Student s = new Student(); s.setId(2L); s.setName("X"); s.setAge(15);
+        Student s = new Student();
+        s.setId(2L);
+        s.setName("X");
+        s.setAge(15);
         when(studentService.findByAgeBetween(10, 20)).thenReturn(List.of(s));
 
-        ResponseEntity<Student[]> response = restTemplate.getForEntity(url(BASE + "/age-between?min=10&max=20"), Student[].class);
+        ResponseEntity<Student[]> response =
+                restTemplate.getForEntity(url(BASE + "/age-between?min=10&max=20"), Student[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).hasSize(1);
         assertThat(response.getBody()[0].getAge()).isEqualTo(15);
+        assertThat(response.getBody()[0].getName()).isEqualTo("X");
     }
 
     @Test
@@ -137,7 +159,10 @@ public class StudentControllerRestTest {
 
         byte[] content = "fake-image".getBytes(StandardCharsets.UTF_8);
         ByteArrayResource resource = new ByteArrayResource(content) {
-            @Override public String getFilename() { return "img.jpg"; }
+            @Override
+            public String getFilename() {
+                return "img.jpg";
+            }
         };
 
         LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
@@ -146,7 +171,7 @@ public class StudentControllerRestTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-        HttpEntity<LinkedMultiValueMap<String,Object>> requestEntity = new HttpEntity<>(map, headers);
+        HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
 
         ResponseEntity<Long> response = restTemplate.postForEntity(url("/students/3/avatar"), requestEntity, Long.class);
 

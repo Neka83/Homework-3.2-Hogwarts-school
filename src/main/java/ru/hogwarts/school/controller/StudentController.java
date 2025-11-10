@@ -2,6 +2,7 @@ package ru.hogwarts.school.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +22,10 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    public StudentController(StudentService studentService) { this.studentService = studentService; }
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
+    }
+
 
     @PostMapping
     public Long createStudent(@RequestBody Student student) {
@@ -54,11 +58,12 @@ public class StudentController {
         return studentService.findByAgeBetween(min, max);
     }
 
-    // avatar endpoints
+
     @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Long uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
         return studentService.uploadAvatarAndReturn(id, file).getId();
     }
+
 
     @GetMapping("/{id}/avatar")
     public void getAvatarFromDB(@PathVariable Long id, HttpServletResponse response) throws IOException {
@@ -66,13 +71,20 @@ public class StudentController {
 
         response.setContentType(avatar.getMediaType());
         response.setContentLength((int) avatar.getFileSize());
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id + "." +
-                avatar.getMediaType().split("/")[1] + "\"");
+
+        String filename = id + "." + avatar.getMediaType().split("/")[1];
+        ContentDisposition contentDisposition = ContentDisposition
+                .inline()
+                .filename(filename)
+                .build();
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         try (OutputStream os = response.getOutputStream()) {
             os.write(avatar.getData());
         }
     }
+
 
     @GetMapping("/{id}/avatar/preview")
     public byte[] getAvatarPreview(@PathVariable Long id) {
@@ -80,14 +92,21 @@ public class StudentController {
         return avatar.getData();
     }
 
+
     @GetMapping("/{id}/avatar/file")
     public void getAvatarFromFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
         Avatar avatar = studentService.findAvatar(id);
 
         response.setContentType(avatar.getMediaType());
         response.setContentLength((int) avatar.getFileSize());
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + id + "." +
-                avatar.getMediaType().split("/")[1] + "\"");
+
+        String filename = id + "." + avatar.getMediaType().split("/")[1];
+        ContentDisposition contentDisposition = ContentDisposition
+                .inline()
+                .filename(filename)
+                .build();
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         try (OutputStream os = response.getOutputStream()) {
             os.write(Files.readAllBytes(Path.of(avatar.getFilePath())));
