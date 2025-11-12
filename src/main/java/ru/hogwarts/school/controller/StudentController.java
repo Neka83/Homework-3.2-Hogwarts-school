@@ -59,6 +59,24 @@ public class StudentController {
     }
 
 
+    @GetMapping("/count")
+    public int getStudentsCount() {
+        return studentService.getStudentsCount();
+    }
+
+
+    @GetMapping("/average-age")
+    public double getAverageAge() {
+        return studentService.getAverageAge();
+    }
+
+
+    @GetMapping("/last-five")
+    public List<Student> getLastFiveStudents() {
+        return studentService.getLastFiveStudents();
+    }
+
+
     @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Long uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
         return studentService.uploadAvatarAndReturn(id, file).getId();

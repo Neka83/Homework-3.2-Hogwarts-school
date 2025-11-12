@@ -55,6 +55,21 @@ public class StudentService {
         return studentRepository.findByAgeBetween(min, max);
     }
 
+    // --- Новые методы для домашки 4.1 ---
+    public int getStudentsCount() {
+        return studentRepository.getStudentsCount();
+    }
+
+    public double getAverageAge() {
+        Double avg = studentRepository.getAverageAge();
+        return avg == null ? 0.0 : avg;
+    }
+
+    public List<Student> getLastFiveStudents() {
+        return studentRepository.getLastFiveStudents();
+    }
+
+
     @Transactional
     public Avatar uploadAvatarAndReturn(Long studentId, MultipartFile file) throws IOException {
         Student student = findStudent(studentId);

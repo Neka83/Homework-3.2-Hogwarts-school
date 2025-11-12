@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 @RestController
 @RequestMapping("/avatars")
@@ -21,7 +22,9 @@ public class AvatarController {
 
     private final AvatarService avatarService;
 
-    public AvatarController(AvatarService avatarService) { this.avatarService = avatarService; }
+    public AvatarController(AvatarService avatarService) {
+        this.avatarService = avatarService;
+    }
 
     @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
@@ -69,5 +72,11 @@ public class AvatarController {
                 .contentType(MediaType.parseMediaType(avatar.getMediaType()))
                 .contentLength(avatar.getFileSize())
                 .body(data);
+    }
+
+
+    @GetMapping("/page")
+    public List<Avatar> getAvatarsPage(@RequestParam int page, @RequestParam int size) {
+        return avatarService.getAvatarsPage(page, size);
     }
 }
