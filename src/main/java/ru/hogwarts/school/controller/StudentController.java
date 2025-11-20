@@ -1,51 +1,133 @@
 package ru.hogwarts.school.controller;
 
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import ru.hogwarts.school.model.Avatar;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.StudentService;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
-@RequestMapping("/student")
+@RequestMapping("/students")
 public class StudentController {
 
-    private final StudentService service;
+    private final StudentService studentService;
 
-    public StudentController(StudentService service) {
-        this.service = service;
+    public StudentController(StudentService studentService) {
+        this.studentService = studentService;
     }
 
+
     @PostMapping
-    public ResponseEntity<Student> create(@RequestBody Student student) {
-        return ResponseEntity.ok(service.create(student));
+    public Long createStudent(@RequestBody Student student) {
+        Student saved = studentService.createStudent(student);
+        return saved.getId();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Student> get(@PathVariable Long id) {
-        Student student = service.get(id);
-        return student != null ? ResponseEntity.ok(student) : ResponseEntity.notFound().build();
+    public Student getStudent(@PathVariable Long id) {
+        return studentService.findStudent(id);
     }
 
     @GetMapping
-    public List<Student> getAll() {
-        return service.getAll();
+    public List<Student> getAllStudents() {
+        return studentService.getAllStudents();
     }
 
     @PutMapping
-    public ResponseEntity<Student> update(@RequestBody Student student) {
-        return ResponseEntity.ok(service.update(student));
+    public Student editStudent(@RequestBody Student student) {
+        return studentService.editStudent(student);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    public void deleteStudent(@PathVariable Long id) {
+        studentService.deleteStudent(id);
     }
 
-    @GetMapping("/age/{age}")
-    public List<Student> findByAge(@PathVariable int age) {
-        return service.findByAge(age);
+    @GetMapping("/age-between")
+    public List<Student> findByAgeBetween(@RequestParam int min, @RequestParam int max) {
+        return studentService.findByAgeBetween(min, max);
+    }
+
+
+    @GetMapping("/count")
+    public int getStudentsCount() {
+        return studentService.getStudentsCount();
+    }
+
+
+    @GetMapping("/average-age")
+    public double getAverageAge() {
+        return studentService.getAverageAge();
+    }
+
+
+    @GetMapping("/last-five")
+    public List<Student> getLastFiveStudents() {
+        return studentService.getLastFiveStudents();
+    }
+
+
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Long uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
+        return studentService.uploadAvatarAndReturn(id, file).getId();
+    }
+
+
+    @GetMapping("/{id}/avatar")
+    public void getAvatarFromDB(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        Avatar avatar = studentService.findAvatar(id);
+
+        response.setContentType(avatar.getMediaType());
+        response.setContentLength((int) avatar.getFileSize());
+
+        String filename = id + "." + avatar.getMediaType().split("/")[1];
+        ContentDisposition contentDisposition = ContentDisposition
+                .inline()
+                .filename(filename)
+                .build();
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+
+        try (OutputStream os = response.getOutputStream()) {
+            os.write(avatar.getData());
+        }
+    }
+
+
+    @GetMapping("/{id}/avatar/preview")
+    public byte[] getAvatarPreview(@PathVariable Long id) {
+        Avatar avatar = studentService.findAvatar(id);
+        return avatar.getData();
+    }
+
+
+    @GetMapping("/{id}/avatar/file")
+    public void getAvatarFromFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        Avatar avatar = studentService.findAvatar(id);
+
+        response.setContentType(avatar.getMediaType());
+        response.setContentLength((int) avatar.getFileSize());
+
+        String filename = id + "." + avatar.getMediaType().split("/")[1];
+        ContentDisposition contentDisposition = ContentDisposition
+                .inline()
+                .filename(filename)
+                .build();
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+
+        try (OutputStream os = response.getOutputStream()) {
+            os.write(Files.readAllBytes(Path.of(avatar.getFilePath())));
+        }
     }
 }
