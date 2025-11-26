@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: index-practice.yml
+      relativeToChangelogFile: true
