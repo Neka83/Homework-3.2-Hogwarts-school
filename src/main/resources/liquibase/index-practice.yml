@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-index-student-name
+      author: neka
+      changes:
+        - createIndex:
+            tableName: student
+            indexName: idx_student_name
+            columns:
+              - column:
+                  name: name
+
+  - changeSet:
+      id: create-index-faculty-name-color
+      author: neka
+      changes:
+        - createIndex:
+            tableName: faculty
+            indexName: idx_faculty_name_color
+            columns:
+              - column:
+                  name: name
+              - column:
+                  name: color
