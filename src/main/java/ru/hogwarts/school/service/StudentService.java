@@ -1,6 +1,8 @@
 package ru.hogwarts.school.service;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.exceptions.StudentNotFoundException;
@@ -21,6 +23,8 @@ import static java.nio.file.StandardOpenOption.CREATE_NEW;
 @Service
 public class StudentService {
 
+    private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
+
     private final StudentRepository studentRepository;
     private final AvatarRepository avatarRepository;
     private final Path avatarsDir = Path.of("avatars");
@@ -31,47 +35,78 @@ public class StudentService {
     }
 
     public Student createStudent(Student student) {
-        return studentRepository.save(student);
+        logger.info("Was invoked method for create student");
+        logger.debug("Creating student: {}", student);
+        Student saved = studentRepository.save(student);
+        logger.info("Student created with id={}", saved.getId());
+        return saved;
     }
 
     public Student findStudent(Long id) {
+        logger.info("Was invoked method for find student by id");
+        logger.debug("Find student id={}", id);
         return studentRepository.findById(id)
-                .orElseThrow(() -> new StudentNotFoundException("Student with id=" + id + " not found"));
+                .orElseThrow(() -> {
+                    logger.error("There is no student with id = {}", id);
+                    return new StudentNotFoundException("Student with id=" + id + " not found");
+                });
     }
 
     public List<Student> getAllStudents() {
+        logger.info("Was invoked method for get all students");
         return studentRepository.findAll();
     }
 
     public Student editStudent(Student student) {
-        return studentRepository.save(student);
+        logger.info("Was invoked method for edit student");
+        logger.debug("Edit student: {}", student);
+        Student updated = studentRepository.save(student);
+        logger.info("Student updated with id={}", updated.getId());
+        return updated;
     }
 
     public void deleteStudent(Long id) {
-        studentRepository.deleteById(id);
+        logger.info("Was invoked method for delete student");
+        logger.debug("Delete student id={}", id);
+        if (!studentRepository.existsById(id)) {
+            logger.warn("Attempt to delete non-existent student id={}", id);
+        } else {
+            studentRepository.deleteById(id);
+            logger.info("Student deleted id={}", id);
+        }
     }
 
     public List<Student> findByAgeBetween(int min, int max) {
+        logger.info("Was invoked method for find students by age between");
+        logger.debug("Find students with min={} max={}", min, max);
         return studentRepository.findByAgeBetween(min, max);
     }
 
-    // --- Новые методы для домашки 4.1 ---
+
     public int getStudentsCount() {
-        return studentRepository.getStudentsCount();
+        logger.info("Was invoked method for get students count");
+        int count = studentRepository.getStudentsCount();
+        logger.debug("Students count = {}", count);
+        return count;
     }
 
     public double getAverageAge() {
+        logger.info("Was invoked method for get average age");
         Double avg = studentRepository.getAverageAge();
-        return avg == null ? 0.0 : avg;
+        double result = avg == null ? 0.0 : avg;
+        logger.debug("Average age = {}", result);
+        return result;
     }
 
     public List<Student> getLastFiveStudents() {
+        logger.info("Was invoked method for get last five students");
         return studentRepository.getLastFiveStudents();
     }
 
 
     @Transactional
     public Avatar uploadAvatarAndReturn(Long studentId, MultipartFile file) throws IOException {
+        logger.info("Was invoked method for upload avatar for student id={}", studentId);
         Student student = findStudent(studentId);
 
         if (!Files.exists(avatarsDir)) Files.createDirectories(avatarsDir);
@@ -91,13 +126,19 @@ public class StudentService {
         avatar.setMediaType(file.getContentType());
         avatar.setData(file.getBytes());
 
-        return avatarRepository.save(avatar);
+        Avatar saved = avatarRepository.save(avatar);
+        logger.info("Avatar saved for student id={}, avatarId={}", studentId, saved.getId());
+        return saved;
     }
 
     @Transactional
     public Avatar findAvatar(Long studentId) {
+        logger.info("Was invoked method for find avatar by student id={}", studentId);
         return avatarRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new StudentNotFoundException("Avatar for student id=" + studentId + " not found"));
+                .orElseThrow(() -> {
+                    logger.error("Avatar for student id={} not found", studentId);
+                    return new StudentNotFoundException("Avatar for student id=" + studentId + " not found");
+                });
     }
 
     private String getExtension(String filename) {
