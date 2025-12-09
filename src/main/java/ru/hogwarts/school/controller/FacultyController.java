@@ -13,7 +13,9 @@ public class FacultyController {
 
     private final FacultyService facultyService;
 
-    public FacultyController(FacultyService facultyService) { this.facultyService = facultyService; }
+    public FacultyController(FacultyService facultyService) {
+        this.facultyService = facultyService;
+    }
 
     @GetMapping("/filter")
     public List<Faculty> findByNameOrColor(@RequestParam String param) {
@@ -28,5 +30,11 @@ public class FacultyController {
     @GetMapping
     public List<Faculty> getAllFaculties() {
         return facultyService.getAllFaculties();
+    }
+
+    // NEW ENDPOINT FOR 4.5
+    @GetMapping("/longest-name")
+    public String getLongestFacultyName() {
+        return facultyService.getLongestFacultyName();
     }
 }

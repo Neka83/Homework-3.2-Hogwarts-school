@@ -8,7 +8,9 @@ import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repository.FacultyRepository;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class FacultyService {
@@ -22,31 +24,35 @@ public class FacultyService {
     }
 
     public List<Faculty> findByNameOrColor(String param) {
-        logger.info("Was invoked method for find faculty by name or color with param={}", param);
+        logger.info("Was invoked method findByNameOrColor");
         return facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(param, param);
     }
 
     public List<Student> getStudentsOfFaculty(Long facultyId) {
-        logger.info("Was invoked method for get students of faculty id={}", facultyId);
+        logger.info("Was invoked method getStudentsOfFaculty id={}", facultyId);
         return facultyRepository.findById(facultyId)
                 .map(Faculty::getStudents)
-                .orElseGet(() -> {
-                    logger.warn("Faculty with id={} not found or has no students", facultyId);
-                    return List.of();
-                });
+                .orElse(List.of());
     }
 
     public List<Faculty> getAllFaculties() {
-        logger.info("Was invoked method for get all faculties");
+        logger.info("Was invoked method getAllFaculties");
         return facultyRepository.findAll();
     }
 
     public Faculty findFaculty(Long id) {
-        logger.info("Was invoked method for find faculty by id={}", id);
+        logger.info("Was invoked method findFaculty id={}", id);
         return facultyRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.error("Faculty with id={} not found", id);
-                    return new FacultyNotFoundException("Faculty with id=" + id + " not found");
-                });
+                .orElseThrow(() -> new FacultyNotFoundException("Faculty with id=" + id + " not found"));
+    }
+
+    public String getLongestFacultyName() {
+        logger.info("Was invoked method getLongestFacultyName");
+
+        return facultyRepository.findAll().stream()
+                .map(Faculty::getName)
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingInt(String::length))
+                .orElse("");
     }
 }

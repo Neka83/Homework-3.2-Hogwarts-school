@@ -26,11 +26,9 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-
     @PostMapping
     public Long createStudent(@RequestBody Student student) {
-        Student saved = studentService.createStudent(student);
-        return saved.getId();
+        return studentService.createStudent(student).getId();
     }
 
     @GetMapping("/{id}")
@@ -58,30 +56,24 @@ public class StudentController {
         return studentService.findByAgeBetween(min, max);
     }
 
+    // ------------------- NEW ENDPOINTS FOR HW 4.5 ---------------------
 
-    @GetMapping("/count")
-    public int getStudentsCount() {
-        return studentService.getStudentsCount();
+    @GetMapping("/names-starting-with-a")
+    public List<String> getNamesStartingWithA() {
+        return studentService.getStudentsNamesStartingWithA();
     }
 
-
-    @GetMapping("/average-age")
-    public double getAverageAge() {
-        return studentService.getAverageAge();
+    @GetMapping("/average-age-stream")
+    public double getAverageAgeStream() {
+        return studentService.getAverageAgeViaStream();
     }
 
-
-    @GetMapping("/last-five")
-    public List<Student> getLastFiveStudents() {
-        return studentService.getLastFiveStudents();
-    }
-
+    // --------------------------------------------------------------------
 
     @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Long uploadAvatar(@PathVariable Long id, @RequestParam("avatar") MultipartFile file) throws IOException {
         return studentService.uploadAvatarAndReturn(id, file).getId();
     }
-
 
     @GetMapping("/{id}/avatar")
     public void getAvatarFromDB(@PathVariable Long id, HttpServletResponse response) throws IOException {
@@ -91,25 +83,13 @@ public class StudentController {
         response.setContentLength((int) avatar.getFileSize());
 
         String filename = id + "." + avatar.getMediaType().split("/")[1];
-        ContentDisposition contentDisposition = ContentDisposition
-                .inline()
-                .filename(filename)
-                .build();
-
+        ContentDisposition contentDisposition = ContentDisposition.inline().filename(filename).build();
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         try (OutputStream os = response.getOutputStream()) {
             os.write(avatar.getData());
         }
     }
-
-
-    @GetMapping("/{id}/avatar/preview")
-    public byte[] getAvatarPreview(@PathVariable Long id) {
-        Avatar avatar = studentService.findAvatar(id);
-        return avatar.getData();
-    }
-
 
     @GetMapping("/{id}/avatar/file")
     public void getAvatarFromFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
@@ -119,11 +99,7 @@ public class StudentController {
         response.setContentLength((int) avatar.getFileSize());
 
         String filename = id + "." + avatar.getMediaType().split("/")[1];
-        ContentDisposition contentDisposition = ContentDisposition
-                .inline()
-                .filename(filename)
-                .build();
-
+        ContentDisposition contentDisposition = ContentDisposition.inline().filename(filename).build();
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
 
         try (OutputStream os = response.getOutputStream()) {
