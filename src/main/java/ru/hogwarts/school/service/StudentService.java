@@ -140,4 +140,78 @@ public class StudentService {
     private String getExtension(String filename) {
         return filename.substring(filename.lastIndexOf('.') + 1);
     }
+
+    public void printStudentsParallel() {
+        logger.info("Was invoked method printStudentsParallel");
+
+        List<Student> students = studentRepository.findAll();
+        if (students.size() < 6) {
+            logger.warn("Not enough students to print in parallel, size={}", students.size());
+        }
+
+        // первые два имени — в основном потоке
+        printIfExists(students, 0);
+        printIfExists(students, 1);
+
+        // 3 и 4 — в одном потоке
+        Thread thread1 = new Thread(() -> {
+            printIfExists(students, 2);
+            printIfExists(students, 3);
+        }, "student-printer-1");
+
+        // 5 и 6 — в другом потоке
+        Thread thread2 = new Thread(() -> {
+            printIfExists(students, 4);
+            printIfExists(students, 5);
+        }, "student-printer-2");
+
+        thread1.start();
+        thread2.start();
+    }
+
+    public void printStudentsSynchronized() {
+        logger.info("Was invoked method printStudentsSynchronized");
+
+        List<Student> students = studentRepository.findAll();
+        if (students.size() < 6) {
+            logger.warn("Not enough students to print in synchronized mode, size={}", students.size());
+        }
+
+        // первые два имени — в основном потоке
+        printIfExistsSync(students, 0);
+        printIfExistsSync(students, 1);
+
+        // 3 и 4 — в одном потоке
+        Thread thread1 = new Thread(() -> {
+            printIfExistsSync(students, 2);
+            printIfExistsSync(students, 3);
+        }, "student-sync-printer-1");
+
+        // 5 и 6 — в другом потоке
+        Thread thread2 = new Thread(() -> {
+            printIfExistsSync(students, 4);
+            printIfExistsSync(students, 5);
+        }, "student-sync-printer-2");
+
+        thread1.start();
+        thread2.start();
+    }
+
+    private void printIfExists(List<Student> students, int index) {
+        if (index < students.size()) {
+            String name = students.get(index).getName();
+            System.out.println(Thread.currentThread().getName() + " - " + name);
+        }
+    }
+
+    private void printIfExistsSync(List<Student> students, int index) {
+        if (index < students.size()) {
+            String name = students.get(index).getName();
+            printStudentNameSynchronized(name);
+        }
+    }
+
+    private synchronized void printStudentNameSynchronized(String name) {
+        System.out.println(Thread.currentThread().getName() + " - " + name);
+    }
 }

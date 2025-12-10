@@ -106,4 +106,14 @@ public class StudentController {
             os.write(Files.readAllBytes(Path.of(avatar.getFilePath())));
         }
     }
+
+    @GetMapping("/print-parallel")
+    public void printStudentsParallel() {
+        studentService.printStudentsParallel();
+    }
+
+    @GetMapping("/print-synchronized")
+    public void printStudentsSynchronized() {
+        studentService.printStudentsSynchronized();
+    }
 }
